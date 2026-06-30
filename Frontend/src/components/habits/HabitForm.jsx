@@ -12,14 +12,20 @@ export function HabitForm({ editingHabit, onSubmit, onCancel }) {
   };
 
   return (
-    <form className="habit-form" onSubmit={submit}>
-      <label>
-        Habit
-        <input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Drink water" />
+    <form className="flex flex-col gap-4" onSubmit={submit}>
+      <label className="flex flex-col gap-2 text-slate-700 font-bold text-sm">
+        Habit Name
+        <input 
+          required 
+          value={name} 
+          onChange={(event) => setName(event.target.value)} 
+          placeholder="Drink water"
+          className="w-full min-h-[48px] px-4 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-normal"
+        />
       </label>
-      <label>
-        Every
-        <div className="interval-input">
+      <label className="flex flex-col gap-2 text-slate-700 font-bold text-sm">
+        Repeat Every
+        <div className="flex items-center gap-3">
           <input
             required
             type="number"
@@ -27,14 +33,17 @@ export function HabitForm({ editingHabit, onSubmit, onCancel }) {
             max="365"
             value={repeatInterval}
             onChange={(event) => setRepeatInterval(event.target.value)}
+            className="w-24 min-h-[48px] px-4 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-normal text-center"
           />
-          <span>days</span>
+          <span className="text-slate-500 font-semibold">days</span>
         </div>
       </label>
-      <div className="form-actions">
-        <button className="primary-action">{editingHabit ? "Update" : "Add"}</button>
+      <div className="flex gap-3 pt-2">
+        <button className="flex-1 min-h-[48px] bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-colors">
+          {editingHabit ? "Update" : "Create"}
+        </button>
         {editingHabit && (
-          <button type="button" className="ghost-action" onClick={onCancel}>
+          <button type="button" className="flex-1 min-h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-colors" onClick={onCancel}>
             Cancel
           </button>
         )}

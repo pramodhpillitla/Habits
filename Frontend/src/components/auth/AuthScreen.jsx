@@ -34,33 +34,48 @@ export function AuthScreen({ onAuth }) {
   };
 
   return (
-    <main className="auth-shell">
-      <section className="auth-panel">
-        <div className="auth-copy">
-          <div className="brand-lockup">
-            <span className="brand-mark">H</span>
+    <main className="min-h-screen grid place-items-center bg-[#f4f6fa] p-4 md:p-8">
+      <section className="w-full max-w-5xl grid md:grid-cols-2 gap-12 items-center bg-white rounded-[40px] p-8 md:p-12 shadow-xl shadow-slate-200/50 border border-slate-100">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-4 mb-10">
+            <span className="w-14 h-14 grid place-items-center rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 text-white font-black text-2xl shadow-lg shadow-blue-500/30">
+              H
+            </span>
             <div>
-              <h1>Habit Due</h1>
-              <p>Only see the habits that need your attention today.</p>
+              <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Habit Due</h1>
+              <p className="text-slate-500 font-medium">Only see habits that need attention today.</p>
             </div>
           </div>
 
-          <form className="auth-form" onSubmit={submit}>
+          <form className="flex flex-col gap-5" onSubmit={submit}>
             <SegmentedControl label="Authentication mode" options={["login", "register"]} value={mode} onChange={setMode} />
 
             {mode === "register" && (
-              <label>
+              <label className="flex flex-col gap-2 text-slate-700 font-bold text-sm mt-2">
                 Name
-                <input required value={form.name} onChange={updateField("name")} placeholder="Your name" />
+                <input 
+                  required 
+                  value={form.name} 
+                  onChange={updateField("name")} 
+                  placeholder="Your name" 
+                  className="w-full min-h-[48px] px-4 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-normal"
+                />
               </label>
             )}
 
-            <label>
+            <label className="flex flex-col gap-2 text-slate-700 font-bold text-sm mt-2">
               Email
-              <input required type="email" value={form.email} onChange={updateField("email")} placeholder="you@example.com" />
+              <input 
+                required 
+                type="email" 
+                value={form.email} 
+                onChange={updateField("email")} 
+                placeholder="you@example.com" 
+                className="w-full min-h-[48px] px-4 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-normal"
+              />
             </label>
 
-            <label>
+            <label className="flex flex-col gap-2 text-slate-700 font-bold text-sm">
               Password
               <input
                 required
@@ -69,18 +84,24 @@ export function AuthScreen({ onAuth }) {
                 value={form.password}
                 onChange={updateField("password")}
                 placeholder="Minimum 6 characters"
+                className="w-full min-h-[48px] px-4 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-normal"
               />
             </label>
 
-            {error && <p className="form-error">{error}</p>}
+            {error && <p className="bg-red-50 text-red-600 p-3 rounded-xl font-bold text-sm mt-2">{error}</p>}
 
-            <button className="primary-action" disabled={loading}>
+            <button 
+              className="mt-4 min-h-[52px] bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98] disabled:opacity-70" 
+              disabled={loading}
+            >
               {loading ? "Working..." : mode === "register" ? "Create Account" : "Login"}
             </button>
           </form>
         </div>
 
-        <AuthPreview />
+        <div className="hidden md:block">
+          <AuthPreview />
+        </div>
       </section>
     </main>
   );
