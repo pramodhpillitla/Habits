@@ -59,7 +59,7 @@ export function Layout({ user, onLogout }) {
         </div>
         
         {/* Outlet Wrapper */}
-        <div className="flex-1 flex flex-col relative z-10 md:pt-10">
+        <div className="flex-1 flex flex-col md:pt-10">
           <Outlet />
         </div>
       </main>

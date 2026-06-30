@@ -50,7 +50,7 @@ export function Analytics({ token }) {
           </p>
         </div>
         
-        <div className="absolute right-0 bottom-[-16px] w-[50%] md:w-[45%] h-[140%] flex justify-end items-end pointer-events-none z-0">
+        <div className="absolute right-0 bottom-[-16px] w-[50%] md:w-[45%] h-[140%] flex justify-end items-end pointer-events-none">
           <img 
             src="/bg-analytics.jpg" 
             alt="Analytics Illustration" 

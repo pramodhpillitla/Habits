@@ -55,9 +55,9 @@ export function Home({ token }) {
           </div>
         </div>
         
-        <div className="absolute right-0 bottom-[-16px] w-[50%] md:w-[45%] h-[130%] flex justify-end items-end pointer-events-none z-0">
+        <div className="absolute right-0 bottom-[-16px] w-[50%] md:w-[45%] h-[130%] flex justify-end items-end pointer-events-none">
           <img 
-            src="/bg-image.jpg" 
+            src="/dashboard.png" 
             alt="Dashboard Illustration" 
             className="w-full h-full object-contain mix-blend-multiply opacity-95"
           />
