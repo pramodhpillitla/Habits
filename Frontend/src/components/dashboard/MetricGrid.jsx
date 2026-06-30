@@ -9,11 +9,9 @@ export function MetricGrid({ summary }) {
   ];
 
   return (
-    <section className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+    <section className="grid grid-cols-2 gap-3 md:gap-4">
       {metrics.map((m) => (
-        <div key={m.label} className="snap-start shrink-0 w-[140px] md:w-[160px]">
-          <MetricCard label={m.label} value={m.value} color={m.color} />
-        </div>
+        <MetricCard key={m.label} label={m.label} value={m.value} color={m.color} />
       ))}
     </section>
   );

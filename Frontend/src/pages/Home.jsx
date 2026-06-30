@@ -39,16 +39,28 @@ export function Home({ token }) {
   };
 
   return (
-    <div className="space-y-8 px-4 md:px-0 mt-4 md:mt-0">
-      {/* Date Header for Mobile */}
-      <div className="md:hidden text-center mb-6">
-        <p className="text-blue-100 text-sm font-medium">Today</p>
-        <h2 className="text-white text-3xl font-bold">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</h2>
+    <div className="flex flex-col h-full flex-1 w-full max-w-3xl mx-auto">
+      {/* Date Header matching the Behance App style */}
+      <div className="px-6 md:px-0 mb-8 mt-2 md:mt-4 shrink-0 flex items-center justify-between">
+        <div>
+          <h2 className="text-white text-4xl md:text-5xl font-extrabold tracking-tight">
+            {new Date().toLocaleDateString('en-US', { day: 'numeric' })}
+          </h2>
+          <p className="text-blue-100 text-base md:text-lg font-medium tracking-wide ml-0.5 mt-0.5">
+            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+        <div className="bg-white/10 px-4 py-2 rounded-2xl flex items-center gap-2">
+          <span className="text-white font-semibold text-lg leading-none">{dueHabits.length}</span>
+          <span className="text-blue-200 text-[11px] md:text-xs uppercase tracking-wider font-semibold leading-none">Due</span>
+        </div>
       </div>
-
-      <MetricGrid summary={summary} />
       
-      <div className="mt-8">
+      {/* Immersive white rounded panel taking up the rest of the height */}
+      <div className="flex-1 bg-[#f8fafc] rounded-t-[40px] md:rounded-t-[48px] pt-8 md:pt-10 px-5 md:px-10 pb-24 md:pb-10 relative">
+        <div className="mb-6 md:mb-8">
+          <MetricGrid summary={summary} />
+        </div>
         <DueHabitsPanel dueHabits={dueHabits} loading={loading} onComplete={completeHabit} />
       </div>
     </div>

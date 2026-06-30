@@ -96,20 +96,32 @@ const getBulkAnalytics = async (userId, start, end) => {
 
 export const getCompletionStats = async (userId, period = "today") => {
   const { start, end } = getPeriodRange(period);
+  const todayTime = startOfDay().getTime();
+
   const bulkData = await getBulkAnalytics(userId, start, end);
+  const habits = await Habit.find({ userId, deletedAt: null }).select("repeatInterval");
   
-  let totalDue = 0;
+  const daysInPeriod = Math.round((end - start) / (24 * 60 * 60 * 1000)) + 1;
+  let potentialTotalDue = 0;
+  habits.forEach(h => {
+    potentialTotalDue += Math.ceil(daysInPeriod / h.repeatInterval);
+  });
+  
   let completed = 0;
+  let missed = 0;
 
   for (const data of bulkData.values()) {
-    totalDue += data.dueCount;
     completed += data.completedCount;
+    
+    const dayTime = new Date(data.dateStr).getTime();
+    if (dayTime < todayTime) {
+      missed += Math.max(data.dueCount - data.completedCount, 0);
+    }
   }
 
-  const missed = Math.max(totalDue - completed, 0);
-  const completionPercentage = totalDue === 0 ? 0 : Math.round((completed / totalDue) * 100);
+  const completionPercentage = potentialTotalDue === 0 ? 0 : Math.round((completed / potentialTotalDue) * 100);
 
-  return { period, totalDue, completed, missed, completionPercentage };
+  return { period, totalDue: potentialTotalDue, completed, missed, completionPercentage };
 };
 
 export const getConsistency = async (userId, days = 120) => {
