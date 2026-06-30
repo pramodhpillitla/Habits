@@ -3,7 +3,7 @@ import { ContributionGrid } from "./ContributionGrid";
 
 export function ConsistencyPanel({ consistency }) {
   return (
-    <Panel eyebrow="Consistency" title="Last 120 days">
+    <Panel eyebrow="Consistency" title="Past twelve months">
       <ContributionGrid days={consistency} />
     </Panel>
   );

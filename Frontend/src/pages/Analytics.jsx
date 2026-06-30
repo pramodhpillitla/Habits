@@ -14,7 +14,7 @@ export function Analytics({ token }) {
   const loadData = async (selectedPeriod = period) => {
     try {
       const [consistencyData, statsData, historyData] = await Promise.all([
-        apiRequest("/analytics/consistency?days=120", headers),
+        apiRequest("/analytics/consistency?days=365", headers),
         apiRequest(`/analytics/stats?period=${selectedPeriod}`, headers),
         apiRequest("/analytics/history", headers),
       ]);
