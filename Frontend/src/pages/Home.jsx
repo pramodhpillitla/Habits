@@ -55,11 +55,11 @@ export function Home({ token }) {
           </div>
         </div>
         
-        <div className="absolute right-0 bottom-[-16px] w-[50%] md:w-[45%] h-[130%] flex justify-end items-end pointer-events-none">
+        <div className="absolute right-[-10px] bottom-[-16px] w-[65%] md:w-[55%] h-[160%] md:h-[180%] flex justify-end items-end pointer-events-none">
           <img 
             src="/dashboard.png" 
             alt="Dashboard Illustration" 
-            className="w-full h-full object-contain mix-blend-multiply opacity-95"
+            className="w-full h-full object-contain mix-blend-multiply opacity-95 scale-110 origin-bottom-right"
           />
         </div>
       </div>
