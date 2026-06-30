@@ -35,67 +35,77 @@ export const getHabitsWithStatus = async (userId, { dueOnly = false } = {}) => {
   return dueOnly ? items.filter((habit) => habit.status === "due") : items;
 };
 
-export const getDueHabitIdsForDate = async (userId, date = new Date()) => {
-  const day = startOfDay(date);
-  const habits = await Habit.find({
-    userId,
-    deletedAt: null,
-    createdAt: { $lte: day },
-  }).select("_id repeatInterval createdAt");
+const getBulkAnalytics = async (userId, start, end) => {
+  const habits = await Habit.find({ userId, deletedAt: null }).select("_id repeatInterval createdAt");
+  const logs = await HabitLog.find({ 
+    userId, 
+    completed: true, 
+    date: { $lte: end } 
+  }).sort({ date: 1 }).select("habitId date");
 
-  const logs = await HabitLog.find({
-    userId,
-    completed: true,
-    date: { $lte: day },
-  })
-    .sort({ date: 1 })
-    .select("habitId date");
-
-  const datesByHabit = new Map();
-  logs.forEach((log) => {
+  const completionsByHabit = new Map();
+  logs.forEach(log => {
     const key = String(log.habitId);
-    const list = datesByHabit.get(key) || [];
-    list.push(startOfDay(log.date));
-    datesByHabit.set(key, list);
+    if (!completionsByHabit.has(key)) completionsByHabit.set(key, []);
+    completionsByHabit.get(key).push(startOfDay(log.date).getTime());
   });
 
-  return habits
-    .filter((habit) => {
-      const completions = datesByHabit.get(String(habit._id)) || [];
-      if (completions.length === 0) {
-        return startOfDay(habit.createdAt) <= day;
+  const results = new Map();
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dayTime = startOfDay(d).getTime();
+    let dueCount = 0;
+    let completedCount = 0;
+
+    habits.forEach(habit => {
+      const createdTime = startOfDay(habit.createdAt).getTime();
+      if (createdTime > dayTime) return;
+
+      const completions = completionsByHabit.get(String(habit._id)) || [];
+      
+      let lastCompletionBefore = null;
+      let completedToday = false;
+
+      for (let i = 0; i < completions.length; i++) {
+        const cTime = completions[i];
+        if (cTime < dayTime) {
+          lastCompletionBefore = cTime;
+        } else if (cTime === dayTime) {
+          completedToday = true;
+        }
       }
 
-      const lastCompletion = completions[completions.length - 1];
-      return addDays(lastCompletion, habit.repeatInterval) <= day;
-    })
-    .map((habit) => habit._id);
+      let isDue = false;
+      if (lastCompletionBefore === null) {
+        isDue = true;
+      } else {
+        const nextDueTime = addDays(new Date(lastCompletionBefore), habit.repeatInterval).getTime();
+        if (nextDueTime <= dayTime) isDue = true;
+      }
+
+      if (isDue) {
+        dueCount++;
+        if (completedToday) completedCount++;
+      }
+    });
+
+    results.set(toDateKey(d), { dueCount, completedCount, dateStr: toDateKey(d) });
+  }
+
+  return results;
 };
 
 export const getCompletionStats = async (userId, period = "today") => {
   const { start, end } = getPeriodRange(period);
-  const completedLogs = await HabitLog.find({
-    userId,
-    completed: true,
-    date: { $gte: start, $lte: end },
-  }).select("habitId date");
-
+  const bulkData = await getBulkAnalytics(userId, start, end);
+  
   let totalDue = 0;
-  const completedDueKeys = new Set();
-  const completedKeys = new Set(completedLogs.map((log) => `${toDateKey(log.date)}:${log.habitId}`));
+  let completed = 0;
 
-  for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
-    const dueHabitIds = await getDueHabitIdsForDate(userId, date);
-    totalDue += dueHabitIds.length;
-    dueHabitIds.forEach((habitId) => {
-      const key = `${toDateKey(date)}:${habitId}`;
-      if (completedKeys.has(key)) {
-        completedDueKeys.add(key);
-      }
-    });
+  for (const data of bulkData.values()) {
+    totalDue += data.dueCount;
+    completed += data.completedCount;
   }
 
-  const completed = completedDueKeys.size;
   const missed = Math.max(totalDue - completed, 0);
   const completionPercentage = totalDue === 0 ? 0 : Math.round((completed / totalDue) * 100);
 
@@ -105,25 +115,14 @@ export const getCompletionStats = async (userId, period = "today") => {
 export const getConsistency = async (userId, days = 120) => {
   const today = startOfDay();
   const start = addDays(today, -(days - 1));
-  const logs = await HabitLog.find({
-    userId,
-    completed: true,
-    date: { $gte: start, $lte: today },
-  }).select("date habitId");
-
-  const completedByDate = new Map();
-  logs.forEach((log) => {
-    const key = toDateKey(log.date);
-    completedByDate.set(key, (completedByDate.get(key) || 0) + 1);
-  });
+  const bulkData = await getBulkAnalytics(userId, start, today);
 
   const chart = [];
   for (let date = new Date(start); date <= today; date.setDate(date.getDate() + 1)) {
     const key = toDateKey(date);
-    const dueCount = (await getDueHabitIdsForDate(userId, date)).length;
-    const completed = completedByDate.get(key) || 0;
-    const level = dueCount === 0 ? 0 : Math.min(4, Math.ceil((completed / dueCount) * 4));
-    chart.push({ date: key, dueCount, completed, level });
+    const data = bulkData.get(key) || { dueCount: 0, completedCount: 0 };
+    const level = data.dueCount === 0 ? 0 : Math.min(4, Math.ceil((data.completedCount / data.dueCount) * 4));
+    chart.push({ date: key, dueCount: data.dueCount, completed: data.completedCount, level });
   }
 
   return chart;
@@ -147,9 +146,7 @@ export const getStreaks = async (userId) => {
 
   for (let index = consistency.length - 1; index >= 0; index -= 1) {
     const day = consistency[index];
-    if (day.dueCount === 0) {
-      continue;
-    }
+    if (day.dueCount === 0) continue;
     if (day.completed >= day.dueCount) {
       currentStreak += 1;
       continue;
