@@ -21,36 +21,60 @@ export function ContributionGrid({ days }) {
 
   if (!days || days.length === 0) return null;
 
-  const dateParts = days[0].date.split("-");
-  const firstDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-  const offset = firstDate.getDay(); 
-  
-  const blanks = Array.from({ length: offset }).map((_, i) => ({ isBlank: true, id: `blank-${i}` }));
-  const allCells = [...blanks, ...days.map(d => ({ ...d, isBlank: false }))];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthsData = [];
 
-  const weeks = [];
-  let currentWeek = [];
-  allCells.forEach(cell => {
-    currentWeek.push(cell);
-    if (currentWeek.length === 7) {
-      weeks.push(currentWeek);
-      currentWeek = [];
+  let currentMonthKey = "";
+  let currentMonthGroup = null;
+
+  // Group days into strictly distinct month blocks
+  days.forEach(day => {
+    const parts = day.date.split("-");
+    const year = parts[0];
+    const month = parts[1];
+    const dateNum = parts[2];
+    const key = `${year}-${month}`;
+
+    if (key !== currentMonthKey) {
+      if (currentMonthGroup) {
+        monthsData.push(currentMonthGroup);
+      }
+      
+      // Calculate the weekday offset for the very first day of this specific block
+      const firstDate = new Date(year, parseInt(month) - 1, dateNum);
+      const offset = firstDate.getDay();
+      
+      currentMonthGroup = {
+        key,
+        monthName: monthNames[parseInt(month) - 1],
+        cells: Array.from({ length: offset }).map((_, i) => ({ isBlank: true, id: `${key}-start-${i}` }))
+      };
+      currentMonthKey = key;
     }
+    
+    currentMonthGroup.cells.push({ ...day, isBlank: false });
   });
-  if (currentWeek.length > 0) {
-    while (currentWeek.length < 7) {
-      currentWeek.push({ isBlank: true, id: `end-blank-${currentWeek.length}` });
-    }
-    weeks.push(currentWeek);
+
+  if (currentMonthGroup) {
+    monthsData.push(currentMonthGroup);
   }
 
-  const getWeekMonth = (week) => {
-    const validDays = week.filter(d => !d.isBlank);
-    if (validDays.length === 0) return -1;
-    return new Date(validDays[validDays.length - 1].date).getMonth();
-  };
-
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // Pad the end of each month block to complete the 7-day columns and chunk into weeks
+  monthsData.forEach(month => {
+    const remainder = month.cells.length % 7;
+    if (remainder !== 0) {
+      const padCount = 7 - remainder;
+      for (let i = 0; i < padCount; i++) {
+        month.cells.push({ isBlank: true, id: `${month.key}-end-${i}` });
+      }
+    }
+    
+    const weeks = [];
+    for (let i = 0; i < month.cells.length; i += 7) {
+      weeks.push(month.cells.slice(i, i + 7));
+    }
+    month.weeks = weeks;
+  });
 
   return (
     <div className="flex gap-2 mt-4 items-start w-full">
@@ -67,39 +91,32 @@ export function ContributionGrid({ days }) {
       
       {/* Grid container */}
       <div className="flex-1 overflow-x-auto no-scrollbar pb-2" ref={scrollRef}>
-        <div className="flex pt-1 min-w-max" aria-label="Consistency chart">
-          {weeks.map((week, i) => {
-            const currentMonth = getWeekMonth(week);
-            const prevMonth = i > 0 ? getWeekMonth(weeks[i - 1]) : -1;
-            const nextMonth = i < weeks.length - 1 ? getWeekMonth(weeks[i + 1]) : -1;
-
-            const isFirstWeek = currentMonth !== prevMonth;
-            const isLastWeek = currentMonth !== nextMonth;
-
-            return (
-              <div key={i} className={`flex flex-col ${isLastWeek ? 'mr-3 md:mr-4' : 'mr-1'}`}>
-                <div className="flex flex-col gap-1">
-                  {week.map((cell, j) => {
-                    if (cell.isBlank) return <div key={cell.id || j} className="w-3 h-3 md:w-3.5 md:h-3.5" />;
-                    return (
-                      <span
-                        key={cell.date}
-                        className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-[2px] transition-colors ${getLevelClass(cell.level)} hover:ring-2 hover:ring-[#40c463] cursor-pointer`}
-                        title={`${cell.date}: ${cell.completed}/${cell.dueCount} completed`}
-                      />
-                    );
-                  })}
-                </div>
-                <div className="h-4 mt-2 flex items-start justify-start overflow-visible">
-                  {isFirstWeek && currentMonth !== -1 && (
-                    <span className="text-[10px] font-semibold text-slate-400 whitespace-nowrap -ml-1">
-                      {monthNames[currentMonth]}
-                    </span>
-                  )}
-                </div>
+        <div className="flex pt-1 min-w-max gap-3 md:gap-4" aria-label="Consistency chart">
+          {monthsData.map((month) => (
+            <div key={month.key} className="flex flex-col">
+              <div className="flex gap-1">
+                {month.weeks.map((week, i) => (
+                  <div key={i} className="flex flex-col gap-1">
+                    {week.map((cell, j) => {
+                      if (cell.isBlank) return <div key={cell.id || j} className="w-3 h-3 md:w-3.5 md:h-3.5" />;
+                      return (
+                        <span
+                          key={cell.date}
+                          className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-[2px] transition-colors ${getLevelClass(cell.level)} hover:ring-2 hover:ring-[#40c463] cursor-pointer`}
+                          title={`${cell.date}: ${cell.completed}/${cell.dueCount} completed`}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
-            );
-          })}
+              <div className="h-4 mt-2 flex items-start justify-start overflow-visible">
+                <span className="text-[10px] font-semibold text-slate-400 whitespace-nowrap -ml-1">
+                  {month.monthName}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
