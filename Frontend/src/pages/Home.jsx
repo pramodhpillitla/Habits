@@ -41,18 +41,26 @@ export function Home({ token }) {
   return (
     <div className="flex flex-col h-full flex-1 w-full max-w-3xl mx-auto">
       {/* Date Header matching the Behance App style */}
-      <div className="px-6 md:px-0 mb-8 mt-2 md:mt-4 shrink-0 flex items-center justify-between">
-        <div>
-          <h2 className="text-white text-4xl md:text-5xl font-extrabold tracking-tight">
+      <div className="px-6 md:px-0 mb-8 mt-2 md:mt-4 shrink-0 relative h-32 md:h-40 flex items-center">
+        <div className="z-10 relative w-[55%] flex flex-col items-start">
+          <h2 className="text-white text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-md">
             {new Date().toLocaleDateString('en-US', { day: 'numeric' })}
           </h2>
-          <p className="text-blue-100 text-base md:text-lg font-medium tracking-wide ml-0.5 mt-0.5">
+          <p className="text-blue-100 text-base md:text-lg font-medium tracking-wide ml-0.5 mt-0.5 drop-shadow">
             {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </p>
+          <div className="mt-4 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl inline-flex items-center gap-2 shadow-sm border border-white/10">
+            <span className="text-white font-bold text-base leading-none">{dueHabits.length}</span>
+            <span className="text-blue-100 text-[10px] md:text-xs uppercase tracking-wider font-bold leading-none">Due</span>
+          </div>
         </div>
-        <div className="bg-white/10 px-4 py-2 rounded-2xl flex items-center gap-2">
-          <span className="text-white font-semibold text-lg leading-none">{dueHabits.length}</span>
-          <span className="text-blue-200 text-[11px] md:text-xs uppercase tracking-wider font-semibold leading-none">Due</span>
+        
+        <div className="absolute right-0 bottom-[-16px] w-[50%] md:w-[45%] h-[130%] flex justify-end items-end pointer-events-none z-0">
+          <img 
+            src="/bg-image.jpg" 
+            alt="Dashboard Illustration" 
+            className="w-full h-full object-contain mix-blend-multiply opacity-95"
+          />
         </div>
       </div>
       

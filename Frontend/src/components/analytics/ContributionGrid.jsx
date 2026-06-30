@@ -11,10 +11,10 @@ export function ContributionGrid({ days }) {
 
   const getLevelClass = (level) => {
     switch (level) {
-      case 4: return "bg-[#216e39]";
-      case 3: return "bg-[#30a14e]";
-      case 2: return "bg-[#40c463]";
-      case 1: return "bg-[#9be9a8]";
+      case 4: return "bg-blue-600";
+      case 3: return "bg-blue-500";
+      case 2: return "bg-blue-400";
+      case 1: return "bg-blue-200";
       default: return "bg-slate-100";
     }
   };
@@ -102,7 +102,7 @@ export function ContributionGrid({ days }) {
                       return (
                         <span
                           key={cell.date}
-                          className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-[2px] transition-colors ${getLevelClass(cell.level)} hover:ring-2 hover:ring-[#40c463] cursor-pointer`}
+                          className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-[2px] transition-colors ${getLevelClass(cell.level)} hover:ring-2 hover:ring-blue-400 cursor-pointer`}
                           title={`${cell.date}: ${cell.completed}/${cell.dueCount} completed`}
                         />
                       );

@@ -40,13 +40,23 @@ export function Analytics({ token }) {
   return (
     <div className="flex flex-col h-full flex-1 w-full max-w-5xl mx-auto">
       {/* Header matching the Behance App style */}
-      <div className="px-6 md:px-0 mb-8 mt-2 md:mt-4 shrink-0">
-        <h2 className="text-white text-4xl md:text-5xl font-extrabold tracking-tight">
-          Analytics
-        </h2>
-        <p className="text-blue-100 text-base md:text-lg font-medium tracking-wide ml-0.5 mt-0.5">
-          Track your progress
-        </p>
+      <div className="px-6 md:px-0 mb-8 mt-2 md:mt-4 shrink-0 relative h-28 md:h-36 flex items-center">
+        <div className="z-10 relative w-[55%]">
+          <h2 className="text-white text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-md">
+            Analytics
+          </h2>
+          <p className="text-blue-100 text-sm md:text-base font-medium tracking-wide ml-0.5 mt-0.5 drop-shadow">
+            Track your progress
+          </p>
+        </div>
+        
+        <div className="absolute right-0 bottom-[-16px] w-[50%] md:w-[45%] h-[140%] flex justify-end items-end pointer-events-none z-0">
+          <img 
+            src="/bg-analytics.jpg" 
+            alt="Analytics Illustration" 
+            className="w-full h-full object-contain mix-blend-multiply opacity-95"
+          />
+        </div>
       </div>
 
       {/* Immersive white rounded panel taking up the rest of the height */}
