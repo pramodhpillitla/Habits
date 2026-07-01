@@ -1,41 +1,47 @@
 import { useEffect, useState, useMemo } from "react";
 import { apiRequest } from "../utils/api";
 import { ManageHabitsPanel } from "../components/habits/ManageHabitsPanel";
+import toast from "react-hot-toast";
 
-export function Manage({ token }) {
+export function Manage() {
   const [habits, setHabits] = useState([]);
   const [editingHabit, setEditingHabit] = useState(null);
-  const headers = useMemo(() => ({ token }), [token]);
 
   const loadData = async () => {
     try {
-      const data = await apiRequest("/habits", headers);
+      const data = await apiRequest("/habits");
       setHabits(data.habits);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load habits");
     }
   };
 
-  useEffect(() => { loadData(); }, [headers]);
+  useEffect(() => { loadData(); }, []);
 
   const saveHabit = async (habit) => {
     try {
       const path = editingHabit ? `/habits/${editingHabit.id}` : "/habits";
-      await apiRequest(path, { ...headers, method: editingHabit ? "PUT" : "POST", body: JSON.stringify(habit) });
+      await apiRequest(path, { method: editingHabit ? "PUT" : "POST", body: JSON.stringify(habit) });
       setEditingHabit(null);
       loadData();
+      toast.success(editingHabit ? "Habit updated!" : "Habit created!");
     } catch (err) {
       console.error(err);
+      toast.error(err.message || "Failed to save habit");
     }
   };
 
   const deleteHabit = async (habitId) => {
+    if (!window.confirm("Are you sure you want to delete this habit?")) return;
     setHabits((prev) => prev.filter((h) => h.id !== habitId));
     try {
-      await apiRequest(`/habits/${habitId}`, { ...headers, method: "DELETE" });
+      await apiRequest(`/habits/${habitId}`, { method: "DELETE" });
       loadData();
+      toast.success("Habit deleted!");
     } catch (err) {
       console.error(err);
+      toast.error(err.message || "Failed to delete habit");
       loadData();
     }
   };

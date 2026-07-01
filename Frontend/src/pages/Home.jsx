@@ -2,38 +2,41 @@ import { useEffect, useState, useMemo } from "react";
 import { apiRequest } from "../utils/api";
 import { DueHabitsPanel } from "../components/habits/DueHabitsPanel";
 import { MetricGrid } from "../components/dashboard/MetricGrid";
+import toast from "react-hot-toast";
 
-export function Home({ token }) {
+export function Home() {
   const [dueHabits, setDueHabits] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
-  const headers = useMemo(() => ({ token }), [token]);
 
   const loadData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
       const [due, summaryData] = await Promise.all([
-        apiRequest("/habits?due=true", headers),
-        apiRequest("/analytics/summary", headers)
+        apiRequest("/habits?due=true"),
+        apiRequest("/analytics/summary")
       ]);
       setDueHabits(due.habits);
       setSummary(summaryData);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load dashboard");
     } finally {
       if (showLoading) setLoading(false);
     }
   };
 
-  useEffect(() => { loadData(); }, [headers]);
+  useEffect(() => { loadData(); }, []);
 
   const completeHabit = async (habitId) => {
     setDueHabits((prev) => prev.filter((h) => h.id !== habitId));
     try {
-      await apiRequest(`/habits/${habitId}/complete`, { ...headers, method: "POST" });
+      await apiRequest(`/habits/${habitId}/complete`, { method: "POST" });
       loadData(false);
+      toast.success("Habit completed!");
     } catch (err) {
       console.error(err);
+      toast.error(err.message || "Failed to complete habit");
       loadData(false);
     }
   };

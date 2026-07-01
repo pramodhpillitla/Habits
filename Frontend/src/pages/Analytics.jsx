@@ -4,19 +4,18 @@ import { ConsistencyPanel } from "../components/analytics/ConsistencyPanel";
 import { AnalyticsPanel } from "../components/analytics/AnalyticsPanel";
 import { HistoryPanel } from "../components/analytics/HistoryPanel";
 
-export function Analytics({ token }) {
+export function Analytics() {
   const [consistency, setConsistency] = useState([]);
   const [stats, setStats] = useState(null);
   const [history, setHistory] = useState([]);
   const [period, setPeriod] = useState("today");
-  const headers = useMemo(() => ({ token }), [token]);
 
   const loadData = async (selectedPeriod = period) => {
     try {
       const [consistencyData, statsData, historyData] = await Promise.all([
-        apiRequest("/analytics/consistency?days=365", headers),
-        apiRequest(`/analytics/stats?period=${selectedPeriod}`, headers),
-        apiRequest("/analytics/history", headers),
+        apiRequest("/analytics/consistency?days=365"),
+        apiRequest(`/analytics/stats?period=${selectedPeriod}`),
+        apiRequest("/analytics/history"),
       ]);
       setConsistency(consistencyData.days);
       setStats(statsData);
@@ -26,12 +25,12 @@ export function Analytics({ token }) {
     }
   };
 
-  useEffect(() => { loadData(period); }, [headers, period]);
+  useEffect(() => { loadData(period); }, [period]);
 
   const changePeriod = async (nextPeriod) => {
     setPeriod(nextPeriod);
     try {
-      setStats(await apiRequest(`/analytics/stats?period=${nextPeriod}`, headers));
+      setStats(await apiRequest(`/analytics/stats?period=${nextPeriod}`));
     } catch (err) {
       console.error(err);
     }
