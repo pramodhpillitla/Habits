@@ -1,12 +1,9 @@
 import jwt from "jsonwebtoken";
 import { getJwtSecret } from "../config/auth.js";
 import User from "../models/user.model.js";
+import TokenBlacklist from "../models/tokenBlacklist.model.js";
 
 const getToken = (req) => {
-  const header = req.headers.authorization;
-  if (header?.startsWith("Bearer ")) {
-    return header.slice(7);
-  }
   return req.cookies?.token;
 };
 
@@ -15,6 +12,11 @@ export const protect = async (req, res, next) => {
     const token = getToken(req);
     if (!token) {
       return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const isBlacklisted = await TokenBlacklist.findOne({ token });
+    if (isBlacklisted) {
+      return res.status(401).json({ message: "Invalid session" });
     }
 
     const decoded = jwt.verify(token, getJwtSecret());

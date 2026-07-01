@@ -20,8 +20,7 @@ export function AuthScreen({ onAuth }) {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      localStorage.setItem("habit_token", data.token);
-      onAuth(data.user, data.token);
+      onAuth(data.user);
     } catch (err) {
       setError(err.message);
     } finally {

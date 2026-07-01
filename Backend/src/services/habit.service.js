@@ -36,7 +36,7 @@ export const getHabitsWithStatus = async (userId, { dueOnly = false } = {}) => {
 };
 
 const getBulkAnalytics = async (userId, start, end) => {
-  const habits = await Habit.find({ userId, deletedAt: null }).select("_id repeatInterval createdAt");
+  const habits = await Habit.find({ userId }).select("_id repeatInterval createdAt deletedAt");
   const logs = await HabitLog.find({ 
     userId, 
     completed: true, 
@@ -59,6 +59,11 @@ const getBulkAnalytics = async (userId, start, end) => {
     habits.forEach(habit => {
       const createdTime = startOfDay(habit.createdAt).getTime();
       if (createdTime > dayTime) return;
+
+      if (habit.deletedAt) {
+        const deletedTime = startOfDay(habit.deletedAt).getTime();
+        if (dayTime > deletedTime) return;
+      }
 
       const completions = completionsByHabit.get(String(habit._id)) || [];
       
@@ -99,18 +104,13 @@ export const getCompletionStats = async (userId, period = "today") => {
   const todayTime = startOfDay().getTime();
 
   const bulkData = await getBulkAnalytics(userId, start, end);
-  const habits = await Habit.find({ userId, deletedAt: null }).select("repeatInterval");
   
-  const daysInPeriod = Math.round((end - start) / (24 * 60 * 60 * 1000)) + 1;
   let potentialTotalDue = 0;
-  habits.forEach(h => {
-    potentialTotalDue += Math.ceil(daysInPeriod / h.repeatInterval);
-  });
-  
   let completed = 0;
   let missed = 0;
 
   for (const data of bulkData.values()) {
+    potentialTotalDue += data.dueCount;
     completed += data.completedCount;
     
     const dayTime = new Date(data.dateStr).getTime();

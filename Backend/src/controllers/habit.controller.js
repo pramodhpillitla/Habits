@@ -1,6 +1,6 @@
 import Habit from "../models/habit.model.js";
 import HabitLog from "../models/habitLog.model.js";
-import { getHabitsWithStatus } from "../services/habit.service.js";
+import { getHabitsWithStatus, sanitizeHabit } from "../services/habit.service.js";
 import { startOfDay } from "../utils/date.js";
 
 const validateHabitInput = ({ name, repeatInterval }) => {
@@ -34,9 +34,7 @@ export const createHabit = async (req, res) => {
     repeatInterval: Number(req.body.repeatInterval),
   });
 
-  const habits = await getHabitsWithStatus(req.user._id);
-  const habitWithStatus = habits.find((item) => String(item.id) === String(habit._id));
-  return res.status(201).json({ habit: habitWithStatus ?? habit });
+  return res.status(201).json({ habit: sanitizeHabit(habit) });
 };
 
 export const updateHabit = async (req, res) => {
@@ -58,8 +56,8 @@ export const updateHabit = async (req, res) => {
     return res.status(404).json({ message: "Habit not found" });
   }
 
-  const habits = await getHabitsWithStatus(req.user._id);
-  return res.json({ habit: habits.find((item) => String(item.id) === String(habit._id)) });
+  const lastLog = await HabitLog.findOne({ habitId: habit._id, userId: req.user._id, completed: true }).sort({ date: -1 });
+  return res.json({ habit: sanitizeHabit(habit, lastLog) });
 };
 
 export const deleteHabit = async (req, res) => {

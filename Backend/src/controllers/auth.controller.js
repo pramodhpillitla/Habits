@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { getJwtSecret } from "../config/auth.js";
 import User from "../models/user.model.js";
+import TokenBlacklist from "../models/tokenBlacklist.model.js";
 
 const signToken = (userId) =>
   jwt.sign({ id: userId }, getJwtSecret(), {
@@ -49,7 +50,7 @@ export const register = async (req, res) => {
   const token = signToken(user._id);
   setAuthCookie(res, token);
 
-  return res.status(201).json({ user: publicUser(user), token });
+  return res.status(201).json({ user: publicUser(user) });
 };
 
 export const login = async (req, res) => {
@@ -67,10 +68,18 @@ export const login = async (req, res) => {
   const token = signToken(user._id);
   setAuthCookie(res, token);
 
-  return res.json({ user: publicUser(user), token });
+  return res.json({ user: publicUser(user) });
 };
 
-export const logout = (req, res) => {
+export const logout = async (req, res) => {
+  const token = req.cookies.token;
+  if (token) {
+    try {
+      await TokenBlacklist.create({ token });
+    } catch (err) {
+      // Ignore duplicate key errors if already blacklisted
+    }
+  }
   res.clearCookie("token");
   return res.json({ message: "Logged out" });
 };

@@ -4,6 +4,7 @@ import { Dashboard } from "./components/dashboard/Dashboard";
 import { apiRequest } from "./utils/api";
 import "./App.css";
 
+import { Toaster } from "react-hot-toast";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/ui/Layout";
 import { Home } from "./pages/Home";
@@ -12,20 +13,16 @@ import { Analytics } from "./pages/Analytics";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem("habit_token"));
-  const [checkingSession, setCheckingSession] = useState(Boolean(token));
+  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    if (!token) return;
-
-    apiRequest("/auth/me", { token })
+    apiRequest("/auth/me")
       .then((data) => setUser(data.user))
       .catch(() => {
-        localStorage.removeItem("habit_token");
-        setToken("");
+        setUser(null);
       })
       .finally(() => setCheckingSession(false));
-  }, [token]);
+  }, []);
 
   if (checkingSession) {
     return (
@@ -38,28 +35,30 @@ function App() {
     );
   }
 
-  if (!user || !token) {
+  if (!user) {
     return (
       <AuthScreen
-        onAuth={(nextUser, nextToken) => {
+        onAuth={(nextUser) => {
           setUser(nextUser);
-          setToken(nextToken);
         }}
       />
     );
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout user={user} onLogout={() => { setUser(null); setToken(""); }} />}>
-          <Route index element={<Home token={token} />} />
-          <Route path="manage" element={<Manage token={token} />} />
-          <Route path="analytics" element={<Analytics token={token} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <>
+      <Toaster position="top-center" />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout user={user} onLogout={() => setUser(null)} />}>
+            <Route index element={<Home />} />
+            <Route path="manage" element={<Manage />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
