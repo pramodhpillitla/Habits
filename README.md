@@ -75,8 +75,11 @@ npm install
 Create a `.env` file in the `Backend` directory:
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_super_secret_jwt_key
+MONGO_DB_URI=your_mongodb_connection_string
+ACCESS_TOKEN_SECRET=your_super_secret_access_key
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_SECRET=your_super_secret_refresh_key
+REFRESH_TOKEN_EXPIRY=10d
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 ```
@@ -113,7 +116,7 @@ The architecture is explicitly designed for seamless CI/CD.
 
 ### Backend Deployment (Render / Heroku / AWS)
 1. Ensure the `NODE_ENV` is set to `production`.
-2. Configure environment variables (especially `MONGO_URI`, `JWT_SECRET`, and `CLIENT_URL`).
+2. Configure environment variables (especially `MONGO_DB_URI`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, and `CLIENT_URL`).
 3. The server uses `npm start` (which executes `node server.js`) to boot in production environments.
 
 ### Frontend Deployment (Vercel / Netlify)
