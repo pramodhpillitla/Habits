@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 export function Manage() {
   const [habits, setHabits] = useState([]);
   const [editingHabit, setEditingHabit] = useState(null);
+  const [habitToDelete, setHabitToDelete] = useState(null);
 
   const loadData = async () => {
     try {
@@ -32,8 +33,15 @@ export function Manage() {
     }
   };
 
-  const deleteHabit = async (habitId) => {
-    if (!window.confirm("Are you sure you want to delete this habit?")) return;
+  const requestDelete = (habitId) => {
+    setHabitToDelete(habitId);
+  };
+
+  const confirmDelete = async () => {
+    if (!habitToDelete) return;
+    const habitId = habitToDelete;
+    setHabitToDelete(null);
+    
     setHabits((prev) => prev.filter((h) => h.id !== habitId));
     try {
       await apiRequest(`/habits/${habitId}`, { method: "DELETE" });
@@ -76,9 +84,32 @@ export function Manage() {
           onSave={saveHabit}
           onCancelEdit={() => setEditingHabit(null)}
           onEdit={setEditingHabit}
-          onDelete={deleteHabit}
+          onDelete={requestDelete}
         />
       </div>
+
+      {habitToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl shadow-slate-900/10 animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold text-slate-800 mb-2">Delete Habit</h3>
+            <p className="text-slate-500 mb-6 font-medium">Are you sure you want to delete this habit? This action cannot be undone.</p>
+            <div className="flex gap-3 w-full">
+              <button 
+                onClick={() => setHabitToDelete(null)}
+                className="flex-1 min-h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-[0.98]"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 min-h-[48px] bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all active:scale-[0.98]"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

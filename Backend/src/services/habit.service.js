@@ -104,20 +104,45 @@ export const getCompletionStats = async (userId, period = "today") => {
   const todayTime = startOfDay().getTime();
 
   const bulkData = await getBulkAnalytics(userId, start, end);
+  const habits = await Habit.find({ userId }).select("repeatInterval createdAt deletedAt");
   
   let potentialTotalDue = 0;
+  let potentialTotalDueUpToToday = 0;
+
+  habits.forEach(h => {
+    const createdTime = startOfDay(h.createdAt).getTime();
+    const deletedTime = h.deletedAt ? startOfDay(h.deletedAt).getTime() : Infinity;
+    const startTime = start.getTime();
+    const endTime = end.getTime();
+
+    const activeStart = Math.max(createdTime, startTime);
+    const activeEnd = Math.min(deletedTime, endTime);
+
+    if (activeStart <= activeEnd) {
+      const activeDays = Math.round((activeEnd - activeStart) / (24 * 60 * 60 * 1000)) + 1;
+      potentialTotalDue += Math.ceil(activeDays / h.repeatInterval);
+    }
+
+    const activeEndToday = Math.min(activeEnd, todayTime);
+    if (activeStart <= activeEndToday) {
+      const activeDaysToday = Math.round((activeEndToday - activeStart) / (24 * 60 * 60 * 1000)) + 1;
+      potentialTotalDueUpToToday += Math.ceil(activeDaysToday / h.repeatInterval);
+    }
+  });
+
   let completed = 0;
-  let missed = 0;
+  let completedUpToToday = 0;
 
   for (const data of bulkData.values()) {
-    potentialTotalDue += data.dueCount;
     completed += data.completedCount;
     
     const dayTime = new Date(data.dateStr).getTime();
-    if (dayTime < todayTime) {
-      missed += Math.max(data.dueCount - data.completedCount, 0);
+    if (dayTime <= todayTime) {
+      completedUpToToday += data.completedCount;
     }
   }
+
+  const missed = Math.max(potentialTotalDueUpToToday - completedUpToToday, 0);
 
   const completionPercentage = potentialTotalDue === 0 ? 0 : Math.round((completed / potentialTotalDue) * 100);
 
