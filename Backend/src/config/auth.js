@@ -1,10 +1,11 @@
 export const getJwtSecret = () => {
-  if (process.env.JWT_SECRET) {
-    return process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET || process.env.ACCESS_TOKEN_SECRET;
+  if (secret) {
+    return secret;
   }
 
   if (process.env.NODE_ENV === "production") {
-    throw new Error("JWT_SECRET is required in production");
+    throw new Error("JWT_SECRET or ACCESS_TOKEN_SECRET is required in production");
   }
 
   return "habit-due-local-development-secret";

@@ -6,7 +6,7 @@ import TokenBlacklist from "../models/tokenBlacklist.model.js";
 
 const signToken = (userId) =>
   jwt.sign({ id: userId }, getJwtSecret(), {
-    expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    expiresIn: process.env.JWT_EXPIRES_IN || process.env.ACCESS_TOKEN_EXPIRY || "7d",
   });
 
 const publicUser = (user) => ({
