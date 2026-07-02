@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Habit Due',
         short_name: 'Habits',
